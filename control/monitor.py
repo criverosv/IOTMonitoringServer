@@ -68,29 +68,32 @@ def simple_rain_predictor(country, city):
         .select_related('station__location') \
         .select_related('station__location__city', 'station__location__state',
                         'station__location__country') \
-        .values('measurement__name',
+        .annotate(avg_humidity=Avg('avg_value')) \
+        .values('avg_humidity',
+                'measurement__name',
                 'station__location__city__name',
-                'station__location__state__name',
-                'station__location__country__name').filter(measurement__name='humidity', station__location__city__name=city,
-                station__location__country__name=country).aggregate(check_value=Avg('avg_value'))
+                'station__location__country__name').filter(measurement__name='humedad', station__location__city__name=city,
+                station__location__country__name=country)
 
     temperature_data = data \
         .select_related('measurement') \
         .select_related('station__location') \
         .select_related('station__location__city', 'station__location__state',
                         'station__location__country') \
-        .values('measurement__name',
+        .annotate(avg_temperature=Avg('avg_value')) \
+        .values('avg_temperature',
+                'measurement__name',
                 'station__location__city__name',
-                'station__location__state__name',
-                'station__location__country__name').filter(measurement__name='temperature', station__location__city__name=city,
-                station__location__country__name=country).aggregate(check_value=Avg('avg_value'))
+                'station__location__country__name',
+                'station__user__username').filter(measurement__name='temperatura', station__location__city__name=city,
+                station__location__country__name=country)
     humidity, temperature, alert = None, None, None
     if humidity_data:
-        humidity = humidity_data["check_value"]
+        humidity = humidity_data[0]["avg_humidity"]
     if temperature_data:
-        temperature = temperature_data["check_value"]
+        temperature = temperature_data[0]["avg_temperature"]
 
-    user = temperature_data['station__user__username'] if temperature_data else None
+    user = temperature_data[0]['station__user__username'] if temperature_data else None
 
     if humidity and humidity > 65 and temperature and temperature < 10:
         alert = True
@@ -102,7 +105,7 @@ def simple_rain_predictor(country, city):
             client.publish(topic, message)
             print("alerta enviada")
     else:
-        print(f"Not raining probability for {country}, {city}")
+        print(f"Not raining probability for {city}, {country}")
 
 def on_connect(client, userdata, flags, rc):
     '''
