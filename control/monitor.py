@@ -85,6 +85,7 @@ def simple_rain_predictor(country, city):
                 'station__location__state__name',
                 'station__location__country__name').filter(measurement__name='temperature', station__location__city__name=city,
                 station__location__country__name=country)
+    humidity, temperature = None, None
     if humidity_data:
         humidity = humidity_data[0]["check_value"]
     if temperature_data:
