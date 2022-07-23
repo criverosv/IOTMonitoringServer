@@ -95,10 +95,9 @@ def simple_rain_predictor(country, city):
         user = temperature_data[0]['station__user__username'] if temperature_data else None
 
     if humidity and humidity > 65 and temperature and temperature < 10:
-        message = "ALERT there is probability of rain. Temperature ={}, Humidity={}".format(temperature, humidity)
-        topic = '{}/{}/{}/{}/in'.format(country, city, 'all states', user)
+        message = f"ALERT there is probability of rain. Temperature ={temperature}, Humidity={humidity}"
         print(datetime.now(), "Sending alert of rain")
-        client.publish(topic, message)
+        client.publish(f"{country}/NA/{city}/{user}/in", message)
         print("alerta enviada")
     else:
         print(f"Not raining probability for {city}, {country}")
