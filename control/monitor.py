@@ -68,8 +68,7 @@ def simple_rain_predictor(country, city):
         .select_related('station__location') \
         .select_related('station__location__city', 'station__location__state',
                         'station__location__country') \
-        .values('check_value',
-                'measurement__name',
+        .values('measurement__name',
                 'station__location__city__name',
                 'station__location__state__name',
                 'station__location__country__name').filter(measurement__name='humidity', station__location__city__name=city,
@@ -80,8 +79,7 @@ def simple_rain_predictor(country, city):
         .select_related('station__location') \
         .select_related('station__location__city', 'station__location__state',
                         'station__location__country') \
-        .values('check_value',
-                'measurement__name',
+        .values('measurement__name',
                 'station__location__city__name',
                 'station__location__state__name',
                 'station__location__country__name').filter(measurement__name='temperature', station__location__city__name=city,
