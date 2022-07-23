@@ -63,7 +63,7 @@ def simple_rain_predictor(country, city):
     print('Calculating raining probability')
     data = Data.objects.filter(
         base_time__gte=datetime.now() - timedelta(minutes=10))
-    humidity_data = data.annotate(check_value=Avg('avg_value')) \
+    humidity_data = data \
         .select_related('measurement') \
         .select_related('station__location') \
         .select_related('station__location__city', 'station__location__state',
@@ -73,9 +73,9 @@ def simple_rain_predictor(country, city):
                 'station__location__city__name',
                 'station__location__state__name',
                 'station__location__country__name').filter(measurement__name='humidity', station__location__city__name=city,
-                station__location__country__name=country)
+                station__location__country__name=country).aggregate(check_value=Avg('avg_value'))
 
-    temperature_data = data.annotate(check_value=Avg('avg_value')) \
+    temperature_data = data \
         .select_related('measurement') \
         .select_related('station__location') \
         .select_related('station__location__city', 'station__location__state',
@@ -85,14 +85,14 @@ def simple_rain_predictor(country, city):
                 'station__location__city__name',
                 'station__location__state__name',
                 'station__location__country__name').filter(measurement__name='temperature', station__location__city__name=city,
-                station__location__country__name=country)
+                station__location__country__name=country).aggregate(check_value=Avg('avg_value'))
     humidity, temperature, alert = None, None, None
     if humidity_data:
-        humidity = humidity_data[0]["check_value"]
+        humidity = humidity_data["check_value"]
     if temperature_data:
-        temperature = temperature_data[0]["check_value"]
+        temperature = temperature_data["check_value"]
 
-    user = temperature_data[0]['station__user__username'] if temperature_data else None
+    user = temperature_data['station__user__username'] if temperature_data else None
 
     if humidity and humidity > 65 and temperature and temperature < 10:
         alert = True
