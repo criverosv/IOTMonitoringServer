@@ -85,7 +85,7 @@ def simple_rain_predictor(country, city):
                 'station__location__state__name',
                 'station__location__country__name').filter(measurement__name='temperature', station__location__city__name=city,
                 station__location__country__name=country)
-    humidity, temperature = None, None
+    humidity, temperature, alert = None, None, None
     if humidity_data:
         humidity = humidity_data[0]["check_value"]
     if temperature_data:
@@ -94,7 +94,7 @@ def simple_rain_predictor(country, city):
     user = temperature_data[0]['station__user__username'] if temperature_data else None
 
     if humidity and humidity > 65 and temperature and temperature < 10:
-            alert = True
+        alert = True
 
     if alert:
             message = "ALERT there is probability of rain. Temperature ={}, Humidity={}".format(temperature_data["check_value"], humidity_data["check_value"])
