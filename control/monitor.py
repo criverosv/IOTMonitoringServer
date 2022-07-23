@@ -19,7 +19,7 @@ def analyze_data():
     print("Calculando alertas...")
 
     data = Data.objects.filter(
-        base_time__gte=datetime.now() - timedelta(minutes=2))
+        base_time__gte=datetime.now() - timedelta(hours=1))
     aggregation = data.annotate(check_value=Avg('avg_value')) \
         .select_related('station', 'measurement') \
         .select_related('station__user', 'station__location') \
@@ -62,7 +62,7 @@ def analyze_data():
 def simple_rain_predictor(country, city):
     print('Calculating raining probability')
     data = Data.objects.filter(
-        base_time__gte=datetime.now() - timedelta(minutes=10))
+        base_time__gte=datetime.now() - timedelta(hours=1))
     humidity_data = data \
         .select_related('measurement') \
         .select_related('station__location') \
