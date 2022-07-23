@@ -90,7 +90,7 @@ def simple_rain_predictor(country, city):
     if temperature_data:
         temperature = temperature_data[0]["check_value"]
 
-    user = temperature_data['station__user__username']
+    user = temperature_data[0]['station__user__username']
 
     if humidity and humidity > 65 and temperature and temperature < 10:
             alert = True
