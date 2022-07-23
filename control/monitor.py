@@ -60,6 +60,7 @@ def analyze_data():
 
 
 def simple_rain_predictor(country, city):
+    print('Calculating raining probability')
     data = Data.objects.filter(
         base_time__gte=datetime.now() - timedelta(minutes=10))
     humidity_data = data.annotate(check_value=Avg('avg_value')) \
@@ -102,6 +103,8 @@ def simple_rain_predictor(country, city):
             print(datetime.now(), "Sending alert of rain")
             client.publish(topic, message)
             print("alerta enviada")
+    else:
+        print(f"Not raining probability for {country}, {city}")
 
 def on_connect(client, userdata, flags, rc):
     '''
