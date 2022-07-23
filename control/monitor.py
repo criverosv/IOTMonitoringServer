@@ -72,7 +72,7 @@ def simple_rain_predictor(country, city):
                 'station__location__city__name',
                 'station__location__state__name',
                 'station__location__country__name').filter(measurement__name='humidity', station__location__city__name=city,
-                station__location__country__name=country)[0]
+                station__location__country__name=country)
 
     temperature_data = data.annotate(check_value=Avg('avg_value')) \
         .select_related('measurement') \
@@ -84,12 +84,15 @@ def simple_rain_predictor(country, city):
                 'station__location__city__name',
                 'station__location__state__name',
                 'station__location__country__name').filter(measurement__name='temperature', station__location__city__name=city,
-                station__location__country__name=country)[0]
-    
+                station__location__country__name=country)
+    if humidity_data:
+        humidity = humidity_data[0]["check_value"]
+    if temperature_data:
+        temperature = temperature_data[0]["check_value"]
 
     user = temperature_data['station__user__username']
 
-    if humidity_data > 65 and temperature_data < 10:
+    if humidity and humidity > 65 and temperature and temperature < 10:
             alert = True
 
     if alert:
