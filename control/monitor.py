@@ -59,6 +59,46 @@ def analyze_data():
     print(alerts, "alertas enviadas")
 
 
+def simple_rain_predictor(country, city):
+    data = Data.objects.filter(
+        base_time__gte=datetime.now() - timedelta(minutes=10))
+    humidity_data = data.annotate(check_value=Avg('avg_value')) \
+        .select_related('measurement') \
+        .select_related('station__location') \
+        .select_related('station__location__city', 'station__location__state',
+                        'station__location__country') \
+        .values('check_value',
+                'measurement__name',
+                'station__location__city__name',
+                'station__location__state__name',
+                'station__location__country__name').filter(measurement__name='humidity', station__location__city__name=city,
+                station__location__country__name=country)[0]
+
+    temperature_data = data.annotate(check_value=Avg('avg_value')) \
+        .select_related('measurement') \
+        .select_related('station__location') \
+        .select_related('station__location__city', 'station__location__state',
+                        'station__location__country') \
+        .values('check_value',
+                'measurement__name',
+                'station__location__city__name',
+                'station__location__state__name',
+                'station__location__country__name').filter(measurement__name='temperature', station__location__city__name=city,
+                station__location__country__name=country)[0]
+    
+
+    user = temperature_data['station__user__username']
+
+    if humidity_data > 65 and temperature_data < 10:
+            alert = True
+
+    if alert:
+            message = "ALERT there is probability of rain. Temperature ={}, Humidity={}".format(temperature_data["check_value"], humidity_data["check_value"])
+            topic = '{}/{}/{}/{}/in'.format(country, city, 'all states', user)
+            print(datetime.now(), "Sending alert of rain")
+            client.publish(topic, message)
+            print("alerta enviada")
+
 def on_connect(client, userdata, flags, rc):
     '''
     Función que se ejecuta cuando se conecta al bróker.
@@ -102,10 +142,11 @@ def setup_mqtt():
 
 def start_cron():
     '''
-    Inicia el cron que se encarga de ejecutar la función analyze_data cada 5 minutos.
+    Inicia el cron que se encarga de ejecutar la función analyze_data y simple_rain_predictor cada minuto.
     '''
     print("Iniciando cron...")
     schedule.every(1).minutes.do(analyze_data)
+    schedule.every(1).minutes.do(simple_rain_predictor('colombia', 'bogota'))
     print("Servicio de control iniciado")
     while 1:
         schedule.run_pending()
